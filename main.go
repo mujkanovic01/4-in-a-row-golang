@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 )
 
 var (
@@ -20,10 +23,14 @@ func main() {
 }
 
 func createNewGame() {
-    fmt.Print("Enter width of the board: ")
-    fmt.Scan(&width)
-    fmt.Print("Enter height of the board: ")
-    fmt.Scan(&height)
+    for {
+        fmt.Print("Enter width of the board: ");
+        fmt.Scan(&width);
+        fmt.Print("Enter height of the board: ");
+        fmt.Scan(&height)
+
+        if (width >= 7 && height >= 6) {break}
+    }
 
     // fmt.Print(width, height)
     // TODO: Implement checks for max diff 2 and min size 6x8
@@ -84,10 +91,25 @@ func createNewGame() {
 }
 
 func getNextMove() (int) {
-    var move int
+    var move string
     fmt.Printf("Enter column number (1 - %d)\n", width)
     fmt.Scan(&move)
-    return move - 1
+
+    if strings.ToLower(move) == "save"{
+        saveGame(board, p1Moves, p2Moves)
+        return getNextMove()
+    } else if strings.ToLower(move) == "load"{
+        loadGame()
+        return getNextMove()
+    } else {
+        m, err := strconv.Atoi(move)
+        if err != nil {
+        // ... handle error
+        panic(err)
+         }
+        return m - 1
+    }
+    
 }
 
 func printBoard() {
@@ -149,6 +171,34 @@ func checkIfWon() (bool) {
     }
 
     return false
+}
+
+func saveGame(board [][]int, p1Moves []int, p2Moves []int) {
+    file, err := os.Create("savedgame.txt")
+    if err != nil {
+        return
+    }
+    defer file.Close()
+
+    for i := 0; i < height ; i++ {
+        
+        file.WriteString(strings.Trim(strings.Join(strings.Fields(fmt.Sprint(board[i])), " "), "[]") + "\n")
+    }
+    file.WriteString(strings.Trim(strings.Join(strings.Fields("p1 = " + fmt.Sprint(p1Moves)), " "), "[]") + "\n")
+    file.WriteString(strings.Trim(strings.Join(strings.Fields("p2 = " + fmt.Sprint(p2Moves)), " "), "[]") + "\n")
+}
+
+func loadGame() {
+    data, err := os.ReadFile("savedgame.txt")
+    if err != nil {
+        return
+    }
+    fmt.Println(string(data))
+
+    p1MovesStr := strings.Split(strings.Split(string(data), "p1 = [")[1], "p2")[0]
+    p2MovesStr := strings.Split(string(data), "p2 = [")[1]
+    
+    fmt.Println(p1MovesStr, p2MovesStr)
 }
 
 func checkIfDraw() (bool) {
