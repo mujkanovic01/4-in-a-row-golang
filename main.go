@@ -40,7 +40,6 @@ func createNewGame() {
 		board[i] = make([]int, width)
 	}
     
-    // board := [3][3]int{{1,2,3},{4,5,6},{7,8,9}}
     p1Moves = make([]int, 0)
     p2Moves = make([]int, 0)
     isP1Turn = true
@@ -97,16 +96,17 @@ func getNextMove() (int) {
 
     if strings.ToLower(move) == "save"{
         saveGame(board, p1Moves, p2Moves)
-        return getNextMove()
+        os.Exit(0)
+        return 0
     } else if strings.ToLower(move) == "load"{
         loadGame()
         return getNextMove()
     } else {
         m, err := strconv.Atoi(move)
         if err != nil {
-        // ... handle error
-        panic(err)
-         }
+            fmt.Println("Unkown command")
+            return getNextMove()
+        }
         return m - 1
     }
     
@@ -180,25 +180,45 @@ func saveGame(board [][]int, p1Moves []int, p2Moves []int) {
     }
     defer file.Close()
 
-    for i := 0; i < height ; i++ {
-        
+    for i := 0; i < height; i++ {
         file.WriteString(strings.Trim(strings.Join(strings.Fields(fmt.Sprint(board[i])), " "), "[]") + "\n")
     }
-    file.WriteString(strings.Trim(strings.Join(strings.Fields("p1 = " + fmt.Sprint(p1Moves)), " "), "[]") + "\n")
-    file.WriteString(strings.Trim(strings.Join(strings.Fields("p2 = " + fmt.Sprint(p2Moves)), " "), "[]") + "\n")
+    file.WriteString(strings.Trim(strings.Join(strings.Fields("p1=" + fmt.Sprint(p1Moves)), " "), "[]") + "\n")
+    file.WriteString(strings.Trim(strings.Join(strings.Fields("p2=" + fmt.Sprint(p2Moves)), " "), "[]") + "\n")
 }
 
 func loadGame() {
     data, err := os.ReadFile("savedgame.txt")
-    if err != nil {
-        return
-    }
-    fmt.Println(string(data))
+    if err != nil { return }
 
-    p1MovesStr := strings.Split(strings.Split(string(data), "p1 = [")[1], "p2")[0]
-    p2MovesStr := strings.Split(string(data), "p2 = [")[1]
+    boardData := strings.Split(string(data), "p1")[0]
+    boardDataSplit := strings.Split(boardData, "\n")
+    height = len(boardDataSplit) - 1
+
+    for i := 0; i < len(boardDataSplit) - 1; i++ {
+        boardDataSplitByRow := strings.Split(boardDataSplit[i], " ")
+        for j := 0; j < len(boardDataSplitByRow); j++ {
+            width = len(boardDataSplitByRow)
+            board[i][j], _ = strconv.Atoi(boardDataSplitByRow[j])
+        }
+    }
+
+    playerMovesData := strings.Split(string(data), "p1")[1]
+    p1MovesStr := strings.Split(strings.Split(strings.Split(playerMovesData, "=[")[1], "p2")[0], " ")
+    p2MovesStr := strings.Split(strings.TrimLeft(strings.Split(playerMovesData, "p2=[")[1], " "), " ")
     
-    fmt.Println(p1MovesStr, p2MovesStr)
+    for i := 0; i < len(p1MovesStr); i++ {
+        intValue, _ := strconv.Atoi(p1MovesStr[i])
+        p1Moves = append(p1Moves, intValue)
+    }
+
+    for i := 0; i < len(p2MovesStr); i++ {
+        intValue, _ := strconv.Atoi(p2MovesStr[i])
+        p2Moves = append(p2Moves, intValue)
+    }
+
+    fmt.Println(p1MovesStr)
+    fmt.Println(p2MovesStr)
 }
 
 func checkIfDraw() (bool) {
