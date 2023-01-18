@@ -53,11 +53,9 @@ func createNewGame() {
 		}
         
         // Place the move
-        var placedOnRow int
 		for i := height - 1; i >= 0; i-- {
 			if board[i][move] == 0 {
-				board[i][move] = func() int { if isP1Turn { return 1 } else { return 2 } }() // Makeshift ternary operator
-                placedOnRow = i
+				board[i][move] = getPlayer()
 				break
 			}
 		}
@@ -69,13 +67,18 @@ func createNewGame() {
             p2Moves = append(p2Moves, move + 1)
         }
 
-        if checkIfWon(placedOnRow) {
+        if checkIfWon() {
+            printBoard()
+            fmt.Printf("\nPlayer %d has won the game!\n", getPlayer())
             break
         }
 
         if checkIfDraw() {
+            printBoard()
+            fmt.Println("\nGame is Drawn!")
             break
         }
+
         isP1Turn = !isP1Turn
     }
 }
@@ -106,12 +109,61 @@ func printBoard() {
     fmt.Println("Player 2 moves:", p2Moves)
 }
 
-func checkIfWon(placedOnRow int) (bool) {
-    // Check horizontal dimension
-    
+func checkIfWon() (bool) {
+    movePlayed := getPlayer()
+
+    // Check horizontal path
+    for y := 0; y < width; y++ {
+        for x := 0; x < height - 3; x++ {
+            if board[x][y] == movePlayed && board[x+1][y] == movePlayed && board[x+2][y] == movePlayed && board[x+3][y] == movePlayed {
+                return true
+            }
+        }
+    }
+
+    // Check vertical path
+    for x := 0; x < height; x++ {
+        for y := 0; y < width - 3; y++ {
+            if board[x][y] == movePlayed && board[x][y+1] == movePlayed && board[x][y+2] == movePlayed && board[x][y+3] == movePlayed {
+                return true
+            }
+        }
+    }
+
+    // check right diagonal path
+    for x := 0; x < height - 3; x++ {
+        for y := 3; y < width; y++ {
+            if board[x][y] == movePlayed && board[x+1][y-1] == movePlayed && board[x+2][y-2] == movePlayed && board[x+3][y-3] == movePlayed {
+                return true
+            }
+        }
+    }
+
+    // Check left diagonal path
+    for x := 0; x < height - 3; x++{
+        for y := 0; y < width - 3; y++ {
+            if board[x][y] == movePlayed && board[x+1][y+1] == movePlayed && board[x+2][y+2] == movePlayed && board[x+3][y+3] == movePlayed {
+                return true
+            }
+        }
+    }
+
     return false
 }
 
 func checkIfDraw() (bool) {
-    return false
+    for x := 0; x < height; x++ {
+        for y := 0; y < width; y++ {
+            if board[x][y] == 0 {return false}
+        }
+    }
+
+    return true
+}
+
+func getPlayer() (int) {
+    if isP1Turn { 
+        return 1 
+    }
+    return 2
 }
