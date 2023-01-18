@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+    "math"
 )
 
 var (
@@ -17,9 +18,16 @@ var (
     isP1Turn bool
 )
 func main() {
-    createNewGame()
+    var playAgain string
+    for {
+        createNewGame()
 
-    // TODO: Play again functionality
+        fmt.Println("Do you want to play again?(y/n)")
+        fmt.Scan(&playAgain)
+        if (strings.ToLower(playAgain) != "y") {
+            os.Exit(0)
+        }
+    }
 }
 
 func createNewGame() {
@@ -29,11 +37,12 @@ func createNewGame() {
         fmt.Print("Enter height of the board: ");
         fmt.Scan(&height)
 
-        if (width >= 7 && height >= 6) {break}
+        if (width >= 7 && height >= 6 && math.Abs(float64(width-height)) <= 2 ) {
+            break
+        }
     }
 
     // fmt.Print(width, height)
-    // TODO: Implement checks for max diff 2 and min size 6x8
 
 	board = make([][]int, height)
 	for i := 0; i < int(height); i++ {
